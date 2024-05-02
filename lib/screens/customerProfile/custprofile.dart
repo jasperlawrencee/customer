@@ -93,14 +93,19 @@ class _CustProfileState extends State<CustProfile> {
     }
   }
 
-  Future<String> uploadProfPic() async {
-    final Reference path = FirebaseStorage.instance.ref('customerProfilePics');
-    final File file = File(image!.path);
-    final Reference customerProfile =
-        path.child(currentUser!.uid).child('image.jpg');
-    await customerProfile.putFile(file);
-    String urlDownload = await customerProfile.getDownloadURL();
-    return urlDownload;
+  Future<String?> uploadProfPic() async {
+    try {
+      final Reference path =
+          FirebaseStorage.instance.ref('customerProfilePics');
+      final File file = File(image!.path);
+      final Reference customerProfile =
+          path.child(currentUser!.uid).child('image.jpg');
+      await customerProfile.putFile(file);
+      String urlDownload = await customerProfile.getDownloadURL();
+      return urlDownload;
+    } catch (e) {
+      return null;
+    }
   }
 
   final FirebaseAuthService _auth = FirebaseAuthService();
@@ -129,7 +134,7 @@ class _CustProfileState extends State<CustProfile> {
   }
 
   Future<void> addDataToFirestore() async {
-    String profpicURL = await uploadProfPic();
+    String? profpicURL = await uploadProfPic();
     if (_formKey.currentState!.validate()) {
       try {
         // Collection reference

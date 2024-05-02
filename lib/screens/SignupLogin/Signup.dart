@@ -179,7 +179,10 @@ class _CustSignUpState extends State<CustSignUp> {
     postEmailToFireStore();
 
     if (_formKey.currentState!.validate()) {
-      print("User successfully created");
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
       toastification.show(
           type: ToastificationType.info,
           context: context,

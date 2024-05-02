@@ -1,12 +1,13 @@
-import 'package:customer/components/already_have_an_account_check.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer/components/assets_strings.dart';
 import 'package:customer/components/background.dart';
-import 'package:customer/components/form_container_widget.dart';
 import 'package:customer/components/constants.dart';
 import 'package:customer/components/widgets.dart';
+import 'package:customer/screens/Booking/editEvent.dart';
 import 'package:customer/screens/Homescreen/MainScreen.dart';
 import 'package:customer/screens/SignupLogin/Signup.dart';
 import 'package:customer/screens/SignupLogin/components/login_topimg.dart';
+import 'package:customer/screens/customerProfile/custprofile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:customer/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
@@ -43,21 +44,34 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: email.trim(), password: password.trim());
-
-        toastification.show(
-            type: ToastificationType.success,
-            context: context,
-            icon: Icon(Icons.check_circle),
-            title: Text('User successfully logged in!'),
-            autoCloseDuration: const Duration(seconds: 3),
-            showProgressBar: false,
-            alignment: Alignment.topCenter,
-            style: ToastificationStyle.fillColored);
-
-        print("User successfully LOGGED IN");
-        // Navigator.pushNamed(context, "/home");
-        Navigator.push(context,
-            MaterialPageRoute(builder: ((context) => const CustMainScreen())));
+        DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser!.uid)
+            .get();
+        if (documentSnapshot.exists) {
+          toastification.show(
+              type: ToastificationType.success,
+              context: context,
+              icon: Icon(Icons.check_circle),
+              title: Text('User successfully logged in!'),
+              autoCloseDuration: const Duration(seconds: 3),
+              showProgressBar: false,
+              alignment: Alignment.topCenter,
+              style: ToastificationStyle.fillColored);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: ((context) => const CustMainScreen())));
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: ((context) => AfterSignup(
+                        email: email,
+                        username: 'username',
+                        password: password,
+                      ))));
+        }
       } catch (e) {
         toastification.show(
             type: ToastificationType.error,
