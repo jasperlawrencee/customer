@@ -87,6 +87,7 @@ class _CashInScreenState extends State<CashInScreen> {
   Future<void> cashIn(String amount) async {
     try {
       Map<String, dynamic> transaction = {
+        'user': widget.profile.username,
         'amount': int.parse(amount),
         'description': 'deposit',
         'timestamp': DateTime.now(),
