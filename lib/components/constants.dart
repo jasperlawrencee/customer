@@ -16,4 +16,4 @@ const double defTitleFontSize = 20;
 //Strings
 const String splashImage = 'assets/images/splash_logo.png';
 const String suzyImg = 'assets/images/red.jpg';
-const String adminUid = 'A5iQcK5n75M5BsmGeqoi7hHcgja2';
+const String adminID = 'A5iQcK5n75M5BsmGeqoi7hHcgja2';

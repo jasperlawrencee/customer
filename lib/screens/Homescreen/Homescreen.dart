@@ -180,7 +180,7 @@ class _CustHomeState extends State<CustHome> {
                                                   onPressed: () async {
                                                     await db
                                                         .collection('users')
-                                                        .doc(adminUid)
+                                                        .doc(adminID)
                                                         .collection('reports')
                                                         .add({
                                                       'customerID':

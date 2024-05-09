@@ -103,7 +103,7 @@ class _CashInScreenState extends State<CashInScreen> {
         //adding transaction to admin db
         await db
             .collection('users')
-            .doc(adminUid) //constant admin ID in firestore
+            .doc(adminID) //constant admin ID in firestore
             .collection('transaction')
             .add(transaction);
       } else {
