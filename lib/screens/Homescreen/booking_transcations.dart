@@ -56,14 +56,18 @@ class BookingTransactions extends StatefulWidget {
 
 class _BookingTransactionsState extends State<BookingTransactions> {
   User? currentUser = FirebaseAuth.instance.currentUser;
+  bool ascending = true;
+  List<String> sortBy = ["Ascending", "Descending"];
+  String dropdownValue = "Ascending";
 
-  Future<List<Transactions>> getBookingTransactions() async {
+  Future<List<Transactions>> getBookingTransactions(bool ascending) async {
     List<Transactions> transactionsList = [];
     try {
       QuerySnapshot querySnapshot = await db
           .collection('users')
           .doc(currentUser!.uid)
           .collection('bookings')
+          .orderBy('dateFrom', descending: ascending)
           .get();
       querySnapshot.docs.forEach((doc) {
         String? reason;
@@ -110,7 +114,7 @@ class _BookingTransactionsState extends State<BookingTransactions> {
           foregroundColor: kPrimaryLightColor,
           backgroundColor: kPrimaryColor,
           title: const Text(
-            'Booking Transactions',
+            'Booking History',
             style: TextStyle(color: kPrimaryLightColor),
           ),
         ),
@@ -118,7 +122,7 @@ class _BookingTransactionsState extends State<BookingTransactions> {
           child: Container(
             margin: const EdgeInsets.fromLTRB(15, 30, 15, 0),
             child: FutureBuilder(
-              future: getBookingTransactions(),
+              future: getBookingTransactions(ascending),
               builder: (context, transactions) {
                 if (transactions.hasData) {
                   final data = transactions.data!;
@@ -126,61 +130,113 @@ class _BookingTransactionsState extends State<BookingTransactions> {
                     onRefresh: () async {
                       setState(() {});
                     },
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: transactions.data!.length,
-                      itemBuilder: (context, index) {
-                        Color statusColor = data[index].status.toLowerCase() ==
-                                'pending'
-                            ? Colors.grey
-                            : data[index].status.toLowerCase() == 'confirmed'
-                                ? Colors.green
-                                : data[index].status.toLowerCase() == 'complete'
-                                    ? kPrimaryColor
-                                    : data[index].status.toLowerCase() ==
-                                            'denied'
-                                        ? Colors.red
-                                        : Colors.black;
-                        return transaction(
-                            Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        //client name
-                                        Text(
-                                          data[index].clientUsername,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        //date from and date to of appointment
-                                        Text(
-                                            ' - ${DateFormat.MMMEd().format(data[index].dateFrom)}'),
-                                      ],
-                                    ),
-                                    //status
-                                  ],
-                                ),
-                                const SizedBox(height: defaultPadding),
-                                Text(data[index].location), //address
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      data[index].status.toUpperCase(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: statusColor),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                            TransactionHistory(transactions: data[index]));
-                      },
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Sort By'),
+                            DropdownButton(
+                              icon: const Icon(Icons.arrow_drop_down,
+                                  color: kPrimaryColor),
+                              value: dropdownValue,
+                              items: sortBy
+                                  .map<DropdownMenuItem<String>>(
+                                      (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(
+                                            e,
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          )))
+                                  .toList(),
+                              onChanged: (String? value) {
+                                setState(() {
+                                  dropdownValue = value!;
+                                });
+                                if (dropdownValue == "Ascending") {
+                                  setState(() {
+                                    ascending = true;
+                                  });
+                                } else {
+                                  setState(() {
+                                    ascending = false;
+                                  });
+                                }
+                                log("sort: $dropdownValue order: $ascending");
+                              },
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: defaultPadding),
+                        Expanded(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: transactions.data!.length,
+                            itemBuilder: (context, index) {
+                              Color statusColor =
+                                  data[index].status.toLowerCase() == 'pending'
+                                      ? Colors.grey
+                                      : data[index].status.toLowerCase() ==
+                                              'confirmed'
+                                          ? Colors.green
+                                          : data[index].status.toLowerCase() ==
+                                                  'complete'
+                                              ? kPrimaryColor
+                                              : data[index]
+                                                          .status
+                                                          .toLowerCase() ==
+                                                      'denied'
+                                                  ? Colors.red
+                                                  : Colors.black;
+                              return transaction(
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              //client name
+                                              Text(
+                                                data[index].clientUsername,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              //date from and date to of appointment
+                                              Text(
+                                                  ' - ${DateFormat.MMMEd().format(data[index].dateFrom)}'),
+                                            ],
+                                          ),
+                                          //status
+                                        ],
+                                      ),
+                                      const SizedBox(height: defaultPadding),
+                                      Text(data[index].location), //address
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            data[index].status.toUpperCase(),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: statusColor),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                  TransactionHistory(
+                                      transactions: data[index]));
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 } else {

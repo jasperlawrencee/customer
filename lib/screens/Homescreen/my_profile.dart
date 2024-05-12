@@ -50,7 +50,6 @@ class _MyProfileState extends State<MyProfile> {
           .collection('users')
           .doc(currentUser!.uid)
           .get();
-      log(userDoc.id);
       return Profile(
         uid: userDoc.id,
         username: userDoc['Username'],
@@ -160,7 +159,7 @@ class _MyProfileState extends State<MyProfile> {
                             },
                           ),
                           ProfileMenuWidget(
-                            title: 'Booking Transactions',
+                            title: 'Booking History',
                             icon: LineIcons.calendar,
                             onPress: () {
                               Navigator.push(context, MaterialPageRoute(
